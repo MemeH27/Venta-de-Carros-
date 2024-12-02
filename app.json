@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "ejemploapp",
-    "slug": "ejemploapp",
+    "name": "VentaDeCarros",
+    "slug": "VentaDeCarros",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
