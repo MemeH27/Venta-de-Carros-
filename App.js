@@ -5,6 +5,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Login from './pantallas/Login'; 
 import Registro from './pantallas/Registro'; 
 import Inicio from './pantallas/Inicio'; 
+import Perfil from './pantallas/Perfil'; 
+import PublicarCarro from './pantallas/PublicarCarro';
+import BuscarCarro from './pantallas/BuscarCarro';
+import ExplorarCarros from './pantallas/ExplorarCarros';
 import { verificarAutenticacion } from './utils/auth'; 
 
 const Stack = createStackNavigator();
@@ -35,6 +39,10 @@ export default function App() {
         {/* Si el usuario no está autenticado, muestra las pantallas de Login y Registro */}
         <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="Registro" component={Registro} />
+        <Stack.Screen name="Perfil" component={Perfil} />
+        <Stack.Screen name="PublicarCarro" component={PublicarCarro} />
+        <Stack.Screen name="BuscarCarro" component={BuscarCarro} />
+        <Stack.Screen name="ExplorarCarros" component={ExplorarCarros} />
       </Stack.Navigator>
     </NavigationContainer>
   );

@@ -5,9 +5,10 @@ const Registro = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [name, setName] = useState('');  // Nuevo estado para el nombre
 
   const validateRegister = () => {
-    if (!email || !password || !confirmPassword) {
+    if (!email || !password || !confirmPassword || !name) {  // Asegúrate de que 'name' esté completo
       Alert.alert("Error", "Por favor, completa todos los campos.");
       return false;
     }
@@ -28,9 +29,11 @@ const Registro = ({ navigation }) => {
   };
 
   const handleRegister = async () => {
+    console.log("Intentando registrar...");
     if (!validateRegister()) return;
   
     try {
+      console.log("Enviando datos de registro...");
       const response = await fetch('http://192.168.1.17:5000/register', {
         method: 'POST',
         headers: {
@@ -39,15 +42,19 @@ const Registro = ({ navigation }) => {
         body: JSON.stringify({
           email,
           password,
+          name,
         }),
       });
   
+      console.log("Respuesta del servidor:", response);
+  
       if (!response.ok) {
-        throw new Error('Error al conectar con el servidor');
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Error al conectar con el servidor');
       }
   
       const data = await response.json();
-      console.log(data);
+      console.log("Datos del servidor:", data);
   
       if (data.success) {
         Alert.alert("Éxito", "Usuario registrado exitosamente. Se ha enviado un correo de confirmación.");
@@ -56,14 +63,23 @@ const Registro = ({ navigation }) => {
         Alert.alert("Error", data.message || "Hubo un error al registrar el usuario.");
       }
     } catch (error) {
-      console.error("Error al registrar el usuario:", error); // Más detalles del error
+      console.error("Error al registrar el usuario:", error);
       Alert.alert("Error", `No se pudo completar el registro. Intenta de nuevo. Error: ${error.message}`);
     }
   };
+  
+  
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Regístrate</Text>
+      
+      <TextInput
+        style={styles.input}
+        placeholder="Nombre"
+        value={name}
+        onChangeText={setName}
+      />
       
       <TextInput
         style={styles.input}

@@ -1,13 +1,13 @@
-
 import React, { useState } from 'react';
 import { View, TextInput, Button, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 
 const Login = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  
+  // Validaciones de campos
   const validateLogin = () => {
     if (!email || !password) {
       Alert.alert("Error", "Por favor, completa todos los campos.");
@@ -24,27 +24,48 @@ const Login = ({ navigation }) => {
   };
 
   const handleLogin = async () => {
-    if (!validateLogin()) return; 
-
-    
-    const token = "ejemplo-token";  
-    await AsyncStorage.setItem('token', token); 
-
-    
-    navigation.replace('Inicio'); 
+    console.log("Intentando iniciar sesión...");
+  
+    try {
+      const response = await axios.post('http://192.168.1.17:5000/login', {
+        email,
+        password,
+      });
+  
+      if (response.status === 200) {
+        const { token } = response.data;
+        console.log("Token recibido:", token);
+        
+        if (token) {
+          // Guardar el token en el almacenamiento seguro, por ejemplo AsyncStorage
+          await AsyncStorage.setItem('userToken', token);
+          console.log("Token almacenado correctamente.");
+          
+          // Navegar a la pantalla de inicio
+          navigation.navigate('Inicio'); // Asegúrate de usar el nombre correcto de la pantalla
+        }
+      } else {
+        throw new Error("Credenciales incorrectas.");
+      }
+    } catch (error) {
+      console.error("Error al iniciar sesión:", error.message);
+      Alert.alert("Error", "Correo o contraseña incorrectos.");
+    }
   };
+  
+  
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Bienvenido</Text>
-      
+
       <TextInput
         style={styles.input}
         placeholder="Email"
         value={email}
         onChangeText={setEmail}
       />
-      
+
       <TextInput
         style={styles.input}
         placeholder="Contraseña"
@@ -52,7 +73,7 @@ const Login = ({ navigation }) => {
         value={password}
         onChangeText={setPassword}
       />
-      
+
       <Button title="Iniciar sesión" onPress={handleLogin} />
 
       <TouchableOpacity onPress={() => navigation.navigate('Registro')} style={styles.link}>
