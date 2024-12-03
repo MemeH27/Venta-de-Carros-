@@ -1,66 +1,97 @@
-import React, { useState } from "react";
-import { View, Text, TextInput, Button, StyleSheet } from "react-native";
 
-const Login = ({ onLogin }) => {
-  const [correo, setCorreo] = useState("");
-  const [contrasena, setContrasena] = useState("");
+import React, { useState } from 'react';
+import { View, TextInput, Button, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-  const loginUsuario = () => {
-    if (correo && contrasena) {
-      const usuario = { correo, contrasena };
-      onLogin(usuario);
-    } else {
-      alert("Por favor ingresa tu correo y contraseña.");
+const Login = ({ navigation }) => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  
+  const validateLogin = () => {
+    if (!email || !password) {
+      Alert.alert("Error", "Por favor, completa todos los campos.");
+      return false;
     }
+
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+    if (!emailRegex.test(email)) {
+      Alert.alert("Error", "Por favor, ingresa un correo válido.");
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleLogin = async () => {
+    if (!validateLogin()) return; 
+
+    
+    const token = "ejemplo-token";  
+    await AsyncStorage.setItem('token', token); 
+
+    
+    navigation.replace('Inicio'); 
   };
 
   return (
-    <View style={styles.contenedor}>
-      <Text style={styles.titulo}>Iniciar Sesión</Text>
-
+    <View style={styles.container}>
+      <Text style={styles.title}>Bienvenido</Text>
+      
       <TextInput
         style={styles.input}
-        placeholder="Correo electrónico"
-        keyboardType="email-address"
-        onChangeText={setCorreo}
-        value={correo}
+        placeholder="Email"
+        value={email}
+        onChangeText={setEmail}
       />
-
+      
       <TextInput
         style={styles.input}
         placeholder="Contraseña"
         secureTextEntry
-        onChangeText={setContrasena}
-        value={contrasena}
+        value={password}
+        onChangeText={setPassword}
       />
+      
+      <Button title="Iniciar sesión" onPress={handleLogin} />
 
-      <Button title="Iniciar sesión" onPress={loginUsuario} />
+      <TouchableOpacity onPress={() => navigation.navigate('Registro')} style={styles.link}>
+        <Text style={styles.linkText}>¿No tienes cuenta? Regístrate</Text>
+      </TouchableOpacity>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  contenedor: {
+  container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 16,
-    backgroundColor: "#ffffff",
+    justifyContent: 'center',
+    padding: 20,
+    backgroundColor: '#f5f5f5',
   },
-  titulo: {
+  title: {
     fontSize: 24,
-    fontWeight: "bold",
+    fontWeight: 'bold',
+    textAlign: 'center',
     marginBottom: 20,
+    color: '#0044cc',
   },
   input: {
-    width: "100%",               // Se ajusta al 100% del ancho de la pantalla
-    padding: 10,
-    borderColor: "#cccccc",
+    height: 50,
+    borderColor: '#ccc',
     borderWidth: 1,
+    marginBottom: 20,
+    paddingHorizontal: 10,
     borderRadius: 5,
-    marginBottom: 16,
-    backgroundColor: "#f9f9f9",
   },
+  link: {
+    marginTop: 10,
+    alignItems: 'center',
+  },
+  linkText: {
+    color: '#0044cc',
+    textDecorationLine: 'underline',
+  }
 });
 
 export default Login;

@@ -1,99 +1,42 @@
-import React, { useState } from "react";
-import { View, Text, StyleSheet } from "react-native";
-import { NavigationContainer } from '@react-navigation/native'; 
-import { createNativeStackNavigator } from '@react-navigation/native-stack'; 
-import Login from "./pantallas/Login";
-import Registro from "./pantallas/Registro";
-import Inicio from "./pantallas/Inicio";
-import AgregarCarro from "./pantallas/AgregarCarro"; 
+import React, { useState, useEffect } from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import Login from './pantallas/Login'; 
+import Registro from './pantallas/Registro'; 
+import Inicio from './pantallas/Inicio'; 
+import { verificarAutenticacion } from './utils/auth'; 
 
-const Stack = createNativeStackNavigator(); 
+const Stack = createStackNavigator();
 
 export default function App() {
-  const [usuario, setUsuario] = useState(null);
-  const [registrando, setRegistrando] = useState(false);
-  const [agregandoCarro, setAgregandoCarro] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  const manejarLogin = (datosUsuario) => {
-    setUsuario(datosUsuario);
-  };
-
-  const manejarRegistro = (nuevoUsuario) => {
-    setUsuario(nuevoUsuario);
-    setRegistrando(false);
-  };
-
-  const manejarAgregarCarro = (nuevoCarro) => {
-    console.log("Carro agregado:", nuevoCarro);
-    setAgregandoCarro(false);
-  };
+  useEffect(() => {
+    const checkAuthStatus = async () => {
+      const token = await verificarAutenticacion(); 
+      if (token) {
+        setIsLoggedIn(true); 
+      }
+    };
+    checkAuthStatus();
+  }, []);
 
   return (
-    <NavigationContainer> {/* Envolvemos nuestra app en NavigationContainer */}
-      <Stack.Navigator>
-        {usuario ? (
-          <Stack.Screen name="Inicio" options={{ title: 'Inicio' }}>
-            {(props) => (
-              <Inicio
-                {...props}
-                usuario={usuario}
-                onAgregarCarro={() => setAgregandoCarro(true)}
-                onEditarCarro={(id) => alert("Funcionalidad para editar carro " + id)}
-                onEliminarCarro={(id) => alert("Funcionalidad para eliminar carro " + id)}
-              />
-            )}
-          </Stack.Screen>
-        ) : registrando ? (
-          <Stack.Screen name="Registro" options={{ title: 'Registro' }}>
-            {(props) => <Registro {...props} onRegister={manejarRegistro} />}
-          </Stack.Screen>
-        ) : (
-          <Stack.Screen name="Login" options={{ title: 'Login' }}>
-            {(props) => <Login {...props} onLogin={manejarLogin} />}
-          </Stack.Screen>
-        )}
-
-        {agregandoCarro && (
-          <Stack.Screen name="AgregarCarro" options={{ title: 'Agregar Carro' }}>
-            {(props) => <AgregarCarro {...props} onAgregarCarro={manejarAgregarCarro} />}
-          </Stack.Screen>
-        )}
-
-        {!registrando && !usuario && (
-          <Stack.Screen name="RegistroLink" options={{ headerShown: false }}>
-            {(props) => (
-              <View style={styles.linkContainer}>
-                <Text
-                  style={styles.link}
-                  onPress={() => setRegistrando(true)}
-                >
-                  ¿No tienes una cuenta? Regístrate aquí.
-                </Text>
-              </View>
-            )}
-          </Stack.Screen>
-        )}
+    <NavigationContainer>
+      <Stack.Navigator initialRouteName={isLoggedIn ? "Inicio" : "Login"}>
+        {/* Si el usuario está autenticado, muestra la pantalla de Inicio */}
+        <Stack.Screen 
+          name="Inicio" 
+          component={Inicio} 
+          options={{ headerShown: false }} 
+        />
+        
+        {/* Si el usuario no está autenticado, muestra las pantallas de Login y Registro */}
+        <Stack.Screen name="Login" component={Login} />
+        <Stack.Screen name="Registro" component={Registro} />
       </Stack.Navigator>
     </NavigationContainer>
   );
 }
 
-const styles = StyleSheet.create({
-  contenedor: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#ffffff",
-  },
-  link: {
-    marginTop: 20,
-    color: "blue",
-    textDecorationLine: "underline",
-    marginBottom: 30,
-  },
-  linkContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-});

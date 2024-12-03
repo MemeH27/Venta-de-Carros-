@@ -1,89 +1,132 @@
 import React, { useState } from 'react';
-import { View, TextInput, Button, Text, Picker, StyleSheet } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { enviarCorreo } from '../utils/email';
-import { registrarUsuario } from '../utils/auth';
+import { View, TextInput, Button, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 
-export default function Registro() {
-  const [nombre, setNombre] = useState('');
-  const [correo, setCorreo] = useState('');
-  const [contrasena, setContrasena] = useState('');
-  const [tipoUsuario, setTipoUsuario] = useState('Cliente'); 
-  const navigation = useNavigation();
+const Registro = ({ navigation }) => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
-  const handleRegistro = async () => {
+  const validateRegister = () => {
+    if (!email || !password || !confirmPassword) {
+      Alert.alert("Error", "Por favor, completa todos los campos.");
+      return false;
+    }
+
+    // Corregir la expresión regular del correo
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+    if (!emailRegex.test(email)) {
+      Alert.alert("Error", "Por favor, ingresa un correo válido.");
+      return false;
+    }
+
+    if (password !== confirmPassword) {
+      Alert.alert("Error", "Las contraseñas no coinciden.");
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleRegister = async () => {
+    if (!validateRegister()) return;
+  
     try {
-      
-      const usuarioExistente = await registrarUsuario(nombre, correo, contrasena, tipoUsuario);
-
-      if (usuarioExistente) {
-        alert('El correo o nombre de usuario ya está en uso');
-        return;
+      const response = await fetch('http://192.168.1.17:5000/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      });
+  
+      if (!response.ok) {
+        throw new Error('Error al conectar con el servidor');
       }
-
-      
-      await enviarCorreo(correo, 'Bienvenido a la app Venta de Carros', 'Tu cuenta ha sido creada exitosamente.');
-
-      navigation.navigate('Inicio');
+  
+      const data = await response.json();
+      console.log(data);
+  
+      if (data.success) {
+        Alert.alert("Éxito", "Usuario registrado exitosamente. Se ha enviado un correo de confirmación.");
+        navigation.navigate('Login');
+      } else {
+        Alert.alert("Error", data.message || "Hubo un error al registrar el usuario.");
+      }
     } catch (error) {
-      console.error(error);
-      alert('Hubo un error al registrarse');
+      console.error("Error al registrar el usuario:", error); // Más detalles del error
+      Alert.alert("Error", `No se pudo completar el registro. Intenta de nuevo. Error: ${error.message}`);
     }
   };
 
   return (
     <View style={styles.container}>
-      <Text>Nombre</Text>
-      <TextInput 
-        style={styles.input} 
-        value={nombre} 
-        onChangeText={setNombre} 
-        placeholder="Nombre de usuario" 
+      <Text style={styles.title}>Regístrate</Text>
+      
+      <TextInput
+        style={styles.input}
+        placeholder="Email"
+        value={email}
+        onChangeText={setEmail}
       />
       
-      <Text>Correo Electrónico</Text>
-      <TextInput 
-        style={styles.input} 
-        value={correo} 
-        onChangeText={setCorreo} 
-        placeholder="Correo electrónico" 
+      <TextInput
+        style={styles.input}
+        placeholder="Contraseña"
+        secureTextEntry
+        value={password}
+        onChangeText={setPassword}
       />
       
-      <Text>Contraseña</Text>
-      <TextInput 
-        style={styles.input} 
-        value={contrasena} 
-        onChangeText={setContrasena} 
-        placeholder="Contraseña" 
-        secureTextEntry 
+      <TextInput
+        style={styles.input}
+        placeholder="Confirmar Contraseña"
+        secureTextEntry
+        value={confirmPassword}
+        onChangeText={setConfirmPassword}
       />
 
-      <Text>Tipo de Usuario</Text>
-      <Picker
-        selectedValue={tipoUsuario}
-        onValueChange={(itemValue) => setTipoUsuario(itemValue)}
-      >
-        <Picker.Item label="Cliente" value="Cliente" />
-        <Picker.Item label="Empleado" value="Empleado" />
-        <Picker.Item label="Administrador" value="Administrador" />
-      </Picker>
+      <Button title="Registrarse" onPress={handleRegister} />
 
-      <Button title="Registrarse" onPress={handleRegistro} />
+      <TouchableOpacity onPress={() => navigation.navigate('Login')} style={styles.link}>
+        <Text style={styles.linkText}>¿Ya tienes cuenta? Inicia sesión</Text>
+      </TouchableOpacity>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
-    padding: 16,
+    padding: 20,
+    backgroundColor: '#f5f5f5',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 20,
+    color: '#0044cc',
   },
   input: {
-    height: 40,
-    borderColor: 'gray',
+    height: 50,
+    borderColor: '#ccc',
     borderWidth: 1,
-    marginBottom: 12,
-    paddingLeft: 8,
+    marginBottom: 20,
+    paddingHorizontal: 10,
+    borderRadius: 5,
   },
+  link: {
+    marginTop: 10,
+    alignItems: 'center',
+  },
+  linkText: {
+    color: '#0044cc',
+    textDecorationLine: 'underline',
+  }
 });
+
+export default Registro;
