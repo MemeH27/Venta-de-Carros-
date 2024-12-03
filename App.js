@@ -6,9 +6,11 @@ import Login from './pantallas/Login';
 import Registro from './pantallas/Registro'; 
 import Inicio from './pantallas/Inicio'; 
 import Perfil from './pantallas/Perfil'; 
-import PublicarCarro from './pantallas/PublicarCarro';
 import BuscarCarro from './pantallas/BuscarCarro';
 import ExplorarCarros from './pantallas/ExplorarCarros';
+import DetallesCarro from './pantallas/DetallesCarro';
+import ModeloDetalles from './pantallas/ModeloDetalles';
+import PublicarCarro from './pantallas/PublicarCarro';
 import { verificarAutenticacion } from './utils/auth'; 
 
 const Stack = createStackNavigator();
@@ -40,9 +42,11 @@ export default function App() {
         <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="Registro" component={Registro} />
         <Stack.Screen name="Perfil" component={Perfil} />
-        <Stack.Screen name="PublicarCarro" component={PublicarCarro} />
         <Stack.Screen name="BuscarCarro" component={BuscarCarro} />
         <Stack.Screen name="ExplorarCarros" component={ExplorarCarros} />
+        <Stack.Screen name="DetallesCarro" component={DetallesCarro} />
+        <Stack.Screen name="ModeloDetalles" component={ModeloDetalles} />
+        <Stack.Screen name='PublicarCarro' component={PublicarCarro} />
       </Stack.Navigator>
     </NavigationContainer>
   );

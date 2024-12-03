@@ -10,7 +10,7 @@ const sendWelcomeEmail = async (email, name) => {
   });
 
   const mailOptions = {
-    from: "tu_correo@gmail.com", // Reemplaza con tu correo
+    from: "yayirobe2305@gmail.com", // Reemplaza con tu correo
     to: email,
     subject: "¡Bienvenido a Venta de Carros!",
     text: `Hola ${name},\n\nGracias por registrarte en nuestra plataforma.\n\nSaludos,\nEl equipo de Venta de Carros.`,
