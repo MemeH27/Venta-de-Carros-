@@ -10,13 +10,13 @@ const PublicarCarro = () => {
   const [carYear, setCarYear] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Solicitar permisos al cargar el componente
   useEffect(() => {
     const requestPermissions = async () => {
-      // Permisos para galería
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert('Acceso denegado', 'Necesitamos acceso a tus fotos para que puedas publicar un carro.');
+      const { status: galleryStatus } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      const { status: cameraStatus } = await ImagePicker.requestCameraPermissionsAsync();
+
+      if (galleryStatus !== 'granted' || cameraStatus !== 'granted') {
+        Alert.alert('Permisos denegados', 'Necesitamos acceso a tus fotos y cámara.');
       }
     };
 
@@ -24,22 +24,20 @@ const PublicarCarro = () => {
   }, []);
 
   const handleSelectImage = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Acceso denegado', 'Se requiere acceso a tus fotos para seleccionar una imagen.');
-      return;
-    }
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 1,
+        allowsEditing: true,
+        aspect: [4, 3],
+      });
 
-    // Selección de imagen
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 1,
-      allowsEditing: true,  // Permite recortar la imagen
-      aspect: [4, 3],       // Aspecto de la imagen (opcional)
-    });
-
-    if (!result.cancelled) {
-      setCarImage(result.uri); // Guardar la URI de la imagen seleccionada
+      if (!result.canceled) {
+        setCarImage(result.assets[0].uri); // Usar la URI de la imagen seleccionada
+      }
+    } catch (error) {
+      console.error('Error seleccionando imagen:', error);
+      Alert.alert('Error', 'Hubo un problema seleccionando la imagen. Por favor, intenta de nuevo.');
     }
   };
 
@@ -51,7 +49,6 @@ const PublicarCarro = () => {
 
     setLoading(true);
 
-    // Simulando la publicación en un servidor o base de datos
     setTimeout(() => {
       setLoading(false);
       Alert.alert('¡Carro publicado!', 'Tu carro ha sido publicado exitosamente.');

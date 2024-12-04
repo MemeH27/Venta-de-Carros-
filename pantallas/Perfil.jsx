@@ -1,20 +1,63 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity, Image, Alert } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 
 const Perfil = ({ navigation }) => {
-  const [name, setName] = useState('Elmer');  // Nombre del usuario
-  const [email, setEmail] = useState('yayirobe2305@gmail.com');  // Email del usuario
-  const [password, setPassword] = useState('Meme');  // Contraseña del usuario
-  const [profileImage, setProfileImage] = useState(null);  // Imagen del perfil
+  const [name, setName] = useState('Elmer'); // Nombre del usuario
+  const [email, setEmail] = useState('yayirobe2305@gmail.com'); // Email del usuario
+  const [password, setPassword] = useState('Meme'); // Contraseña del usuario
+  const [profileImage, setProfileImage] = useState(null); // Imagen del perfil
+
+  useEffect(() => {
+    const requestPermissions = async () => {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permisos denegados', 'Necesitamos acceso a tus fotos para cambiar la imagen de perfil.');
+      }
+    };
+
+    requestPermissions();
+  }, []);
 
   const handleEditProfile = () => {
-    // Lógica para editar el perfil, se puede hacer una solicitud PUT a tu API
+    if (!name.trim()) {
+      Alert.alert('Error', 'El nombre no puede estar vacío.');
+      return;
+    }
+    if (!password.trim()) {
+      Alert.alert('Error', 'La contraseña no puede estar vacía.');
+      return;
+    }
+
     console.log('Perfil actualizado');
+    Alert.alert('Éxito', 'Tu perfil ha sido actualizado.');
   };
 
-  const handleImagePicker = () => {
-    // Lógica para elegir una imagen para el perfil
-    console.log('Elegir imagen');
+  const handleImagePicker = async () => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 1,
+        allowsEditing: true,
+        aspect: [1, 1], // Mantén la imagen cuadrada
+      });
+
+      // Verifica si el usuario canceló la selección
+      if (result.canceled) {
+        Alert.alert('Operación cancelada', 'No se seleccionó ninguna imagen.');
+        return;
+      }
+
+      // Valida que la imagen tenga una URI válida
+      if (result.assets && result.assets.length > 0) {
+        setProfileImage(result.assets[0].uri); // Actualiza la URI de la imagen seleccionada
+      } else {
+        Alert.alert('Error', 'No se pudo cargar la imagen seleccionada.');
+      }
+    } catch (error) {
+      console.error('Error al seleccionar la imagen:', error);
+      Alert.alert('Error', 'Hubo un problema al seleccionar la imagen. Intenta nuevamente.');
+    }
   };
 
   return (
@@ -28,6 +71,7 @@ const Perfil = ({ navigation }) => {
           source={profileImage ? { uri: profileImage } : require('../assets/usuario.png')}
         />
       </TouchableOpacity>
+      <Text style={styles.editText}>Toca la imagen para cambiarla</Text>
 
       <Text style={styles.label}>Nombre</Text>
       <TextInput
@@ -41,7 +85,7 @@ const Perfil = ({ navigation }) => {
         style={styles.input}
         value={email}
         onChangeText={setEmail}
-        editable={false}  // No editable, solo para mostrar
+        editable={false} // No editable, solo para mostrar
       />
 
       <Text style={styles.label}>Contraseña</Text>
@@ -75,11 +119,19 @@ const styles = StyleSheet.create({
     color: '#0044cc',
   },
   profileImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    marginBottom: 20,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    marginBottom: 10,
     alignSelf: 'center',
+    borderWidth: 2,
+    borderColor: '#ddd',
+  },
+  editText: {
+    textAlign: 'center',
+    fontSize: 14,
+    color: '#888',
+    marginBottom: 20,
   },
   label: {
     fontSize: 16,
